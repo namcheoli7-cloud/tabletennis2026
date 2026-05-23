@@ -851,5 +851,131 @@ function showToast(msg){
 
 initFB();
 </script>
+
+<!-- ── QR 플로팅 패널 ── -->
+<div id="qr-panel" style="
+  position:fixed;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:200;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+">
+  <div style="
+    background:white;
+    border-radius:14px;
+    padding:10px 10px 8px;
+    box-shadow:0 4px 20px rgba(0,0,0,.18);
+    border:1.5px solid #dde2ea;
+    text-align:center;
+    cursor:pointer;
+  " onclick="toggleQR()" title="QR코드 공유">
+    <div id="qr-img-wrap">
+      <canvas id="qr-canvas" width="96" height="96"></canvas>
+    </div>
+    <div style="font-size:10px;font-weight:800;color:#1a3a5c;margin-top:5px;letter-spacing:.3px;">QR 공유</div>
+  </div>
+</div>
+
+<!-- QR 확대 오버레이 -->
+<div id="qr-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,20,40,.75);z-index:500;align-items:center;justify-content:center;" onclick="toggleQR()">
+  <div style="background:white;border-radius:20px;padding:24px 24px 18px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.3);" onclick="event.stopPropagation()">
+    <div style="font-family:'Black Han Sans',sans-serif;font-size:17px;color:#1a3a5c;margin-bottom:4px;">🏓 구리남양주 탁구대회</div>
+    <div style="font-size:12px;color:#6b7a8d;margin-bottom:14px;">아래 QR을 스캔해 실시간 현황을 확인하세요!</div>
+    <canvas id="qr-canvas-big" width="220" height="220"></canvas>
+    <div style="font-size:11px;color:#6b7a8d;margin-top:10px;word-break:break-all;max-width:240px;" id="qr-url-txt"></div>
+    <button onclick="toggleQR()" style="margin-top:14px;padding:8px 24px;border-radius:8px;border:none;background:#1a3a5c;color:white;font-family:'Nanum Gothic',sans-serif;font-weight:700;font-size:13px;cursor:pointer;">닫기</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function(){
+  // QR 위치: 화면 너비에 따라 왼쪽/오른쪽 결정
+  function positionQR(){
+    const panel = document.getElementById('qr-panel');
+    const mainW = 800; // max-width
+    const vw = window.innerWidth;
+    const margin = 10;
+    if(vw > mainW + 120) {
+      // 충분한 여백 있음 — 오른쪽에 배치
+      const right = Math.max(margin, (vw - mainW) / 2 - 116);
+      panel.style.right = right + 'px';
+      panel.style.left = 'auto';
+      panel.style.display = 'flex';
+    } else {
+      // 여백 없음 — 숨김
+      panel.style.display = 'none';
+    }
+  }
+
+  function drawQR(canvasId, url, size){
+    try {
+      // qrcode.js 라이브러리 사용
+      new QRCode(document.getElementById(canvasId).parentElement, {
+        text: url,
+        width: size,
+        height: size,
+        colorDark: '#1a3a5c',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch(e) {
+      // 라이브러리 미로드 시 canvas에 직접 그리기 (fallback)
+      const c = document.getElementById(canvasId);
+      if(!c) return;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#f0f4f8';
+      ctx.fillRect(0,0,size,size);
+      ctx.fillStyle = '#1a3a5c';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('QR', size/2, size/2-4);
+      ctx.fillText('준비중', size/2, size/2+8);
+    }
+  }
+
+  window.addEventListener('load', function(){
+    const url = window.location.href;
+    document.getElementById('qr-url-txt').textContent = url;
+    positionQR();
+
+    // 작은 QR (사이드)
+    const wrap = document.getElementById('qr-img-wrap');
+    wrap.innerHTML = ''; // 초기화
+    new QRCode(wrap, {
+      text: url,
+      width: 96,
+      height: 96,
+      colorDark: '#1a3a5c',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    // 큰 QR (오버레이)
+    const wrapBig = document.getElementById('qr-canvas-big').parentElement;
+    wrapBig.innerHTML = '<canvas id="qr-canvas-big" width="220" height="220"></canvas>';
+    new QRCode(document.getElementById('qr-canvas-big').parentElement, {
+      text: url,
+      width: 220,
+      height: 220,
+      colorDark: '#1a3a5c',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  });
+
+  window.addEventListener('resize', positionQR);
+
+  window.toggleQR = function(){
+    const ov = document.getElementById('qr-overlay');
+    const showing = ov.style.display === 'flex';
+    ov.style.display = showing ? 'none' : 'flex';
+  };
+})();
+</script>
+
 </body>
 </html>
