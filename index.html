@@ -294,14 +294,16 @@ select,input[type=text],input[type=password],input[type=number]{
       <thead><tr>
         <th style="width:36px">순위</th>
         <th style="text-align:left;padding-left:8px">학교</th>
-        <th>승</th><th>패</th>
-        <th title="세트 득실">세트</th>
-        <th title="게임 득실">게임</th>
+        <th title="승">승</th>
+        <th title="패">패</th>
+        <th title="매치 득실 (승-패)">매치<br>득실</th>
+        <th title="세트 득실">세트<br>득실</th>
+        <th title="게임(점수) 득실">게임<br>득실</th>
         <th>승점</th>
       </tr></thead>
       <tbody id="stn-body"></tbody>
     </table>
-    <p style="font-size:11px;color:var(--muted);margin-top:8px;">승점: 승 2점 / 패 1점 / 실격 0점 &nbsp;·&nbsp; 동점 시 세트득실 → 게임득실 순</p>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px;">승점: 승 2점 / 패 1점 / 실격 0점 &nbsp;·&nbsp; 동점 시 매치득실 → 세트득실 → 게임득실 순</p>
   </div>
 
   <!-- 리그표 -->
@@ -463,20 +465,35 @@ function currentMatchByGroup(group){
   return null;
 }
 
-// 경기 예정 시각 → Date
-function matchStartTime(m){
-  const [h,min] = m.time.split(':').map(Number);
-  const d = new Date(); d.setHours(h,min,0,0); return d;
-}
+// 어떤 매치가 현재 미완료(진행 중) 상태인지
+function isLiveMatch(m){ return !isMatchDone(m.id); }
 
-// 경과시간 문자열
+// 경과시간: Firebase assignedAt 타임스탬프 기준
+// 없으면 예정 시각(hh:mm) 기준 fallback
 function elapsedStr(m){
-  const start = matchStartTime(m);
-  const now = new Date();
-  const diff = Math.floor((now-start)/1000);
+  const d = getMD(m.id);
+  let startMs;
+  if(d.assignedAt){
+    startMs = d.assignedAt;
+  } else {
+    const [h,min] = m.time.split(':').map(Number);
+    const dt = new Date(); dt.setHours(h,min,0,0);
+    startMs = dt.getTime();
+  }
+  const diff = Math.floor((Date.now() - startMs) / 1000);
   if(diff < 0) return '시작 전';
   const mm = Math.floor(diff/60), ss = diff%60;
   return mm+'분 '+ss.toString().padStart(2,'0')+'초 경과';
+}
+
+// 첫 결과 저장 시 assignedAt 기록 (타이머 기준점)
+function ensureAssignedAt(mid){
+  const d = getMD(mid);
+  if(d.assignedAt) return Promise.resolve();
+  const ts = Date.now();
+  if(db) return db.ref('matchData/'+mid+'/assignedAt').set(ts);
+  matchData[mid] = {...(matchData[mid]||{}), assignedAt: ts};
+  return Promise.resolve();
 }
 
 // ── 전체 렌더 ──
@@ -544,39 +561,54 @@ function renderCourts(){
   }).join('');
 }
 
-// 경과시간 1초마다 갱신
+// 경과시간 1초마다 갱신 (미완료 매치가 현황판에 있을 때만)
 setInterval(()=>{
-  // 진행 중인 매치가 있을 때만 갱신
-  const hasLive = MATCHES.some(m=>!isMatchDone(m.id));
-  if(hasLive) renderCourts();
+  const liveAB = currentMatchByGroup('AB');
+  const liveCD = currentMatchByGroup('CD');
+  const hasLive = [liveAB, liveCD].some(m => m && !isMatchDone(m.id));
+  if(hasLive){
+    // 타이머 텍스트만 교체 (전체 re-render 최소화)
+    renderCourts();
+  }
 }, 1000);
 
 // ── 경기일정 ──
 function renderSchedule(){
   const times = [...new Set(MATCHES.map(m=>m.time))];
+
+  // 현재 현황판에 표시 중인 매치 ID 집합
+  const liveAB = currentMatchByGroup('AB');
+  const liveCD = currentMatchByGroup('CD');
+  const liveIds = new Set([liveAB&&liveAB.id, liveCD&&liveCD.id].filter(Boolean));
+
   document.getElementById('sch-body').innerHTML = times.map(t=>{
     const left  = MATCHES.find(m=>m.time===t&&m.group==='AB');
     const right = MATCHES.find(m=>m.time===t&&m.group==='CD');
 
-    // 해당 시간대가 '현재 진행 중'인지
-    const isCurrentSlot = [left,right].some(m=>m&&!isMatchDone(m.id)&&
-      (()=>{ const now=new Date(); const s=matchStartTime(m); return now>=s && (now-s)<45*60000; })()
+    // 이 시간대 매치 중 하나라도 현황판 진행중이면 행 강조
+    const isCurrentSlot = [left,right].some(m=>m && liveIds.has(m.id) && !isMatchDone(m.id));
+    const rowCls = isCurrentSlot ? 'sch-row-live' : (
+      [left,right].some(m=>m&&isMatchDone(m.id)) ? 'sch-row-done' : ''
     );
-    const rowCls = isCurrentSlot ? 'sch-row-live' : '';
 
     const cell = m=>{
       if(!m) return '<td>-</td><td>-</td>';
       const d = getMD(m.id);
       if(d.forfeit){
         const fw=d.forfeit==='A'?m.teamB:m.teamA;
-        return `<td style="font-weight:800">${m.teamA} vs ${m.teamB}</td><td><span class="badge bforf">${fw} 승(몰수)</span></td>`;
+        return `<td style="font-weight:800">${m.teamA}<br><span style="font-size:11px;color:var(--muted)">vs ${m.teamB}</span></td><td><span class="badge bforf">${fw} 승(몰수)</span></td>`;
       }
       const done=isMatchDone(m.id);
       const {wa,wb}=calcMatchScore(m.id);
-      const live=!done&&(()=>{const now=new Date();const s=matchStartTime(m);return now>=s&&(now-s)<45*60000;})();
+      // 현황판에서 진행 중으로 표시되는 매치이면서 미완료
+      const live = liveIds.has(m.id) && !done;
       let badge=`<span class="badge bp">대기</span>`;
-      if(done){ const wn=calcMatchWinner(m.id)==='A'?m.teamA:m.teamB; badge=`<span class="badge bw">${wn} 승 (${wa}:${wb})</span>`; }
-      else if(live || wa>0||wb>0) badge=`<span class="badge bgo">진행중 ${wa}:${wb}</span>`;
+      if(done){
+        const wn=calcMatchWinner(m.id)==='A'?m.teamA:m.teamB;
+        badge=`<span class="badge bw">${wn} 승 (${wa}:${wb})</span>`;
+      } else if(live){
+        badge=`<span class="badge bgo">진행중 ${wa}:${wb}</span>`;
+      }
       return `<td style="font-weight:800">${m.teamA}<br><span style="font-size:11px;color:var(--muted)">vs ${m.teamB}</span></td><td>${badge}</td>`;
     };
 
@@ -613,13 +645,15 @@ function renderStandings(){
   const data=calcStandings();
   const rb=['rg','rs','rb','ro','ro'];
   document.getElementById('stn-body').innerHTML=data.map((r,i)=>{
-    const sd=r.sf-r.sa, gd=r.gf-r.ga;
+    const md=r.w-r.l, sd=r.sf-r.sa, gd=r.gf-r.ga;
+    const fmt=(v)=>(v>=0?'+':'')+v;
     return `<tr class="${i===0?'r1':i===1?'r2':''}">
       <td><span class="rbadge ${rb[i]}">${i+1}</span></td>
       <td class="sn">${r.school}</td>
       <td>${r.w}</td><td>${r.l}</td>
-      <td style="color:${sd>=0?'var(--ok)':'var(--danger)'}">${sd>=0?'+':''}${sd}</td>
-      <td style="color:${gd>=0?'var(--ok)':'var(--danger)'}">${gd>=0?'+':''}${gd}</td>
+      <td style="color:${md>=0?'var(--ok)':'var(--danger)'}">${fmt(md)}</td>
+      <td style="color:${sd>=0?'var(--ok)':'var(--danger)'}">${fmt(sd)}</td>
+      <td style="color:${gd>=0?'var(--ok)':'var(--danger)'}">${fmt(gd)}</td>
       <td><strong>${r.pts}</strong></td>
     </tr>`;
   }).join('');
@@ -723,6 +757,8 @@ function submitAllSets(){
   if(!hasAny){showToast('최소 1세트 이상 입력하세요');return;}
   // null 제거
   Object.keys(update).forEach(k=>{if(update[k]===null)delete update[k];});
+  // 첫 저장 시 assignedAt 기록 (타이머 기준점)
+  if(!getMD(mid).assignedAt) update.assignedAt = Date.now();
   if(db){
     db.ref(`matchData/${mid}`).set({...getMD(mid),...update,updatedAt:Date.now()})
       .then(()=>{showToast('저장 완료 ✓');onMatchChange();})
