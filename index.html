@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>구리남양주 탁구대회 2025</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Black+Han+Sans&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --primary: #1a3a5c;
+    --accent: #e84545;
+    --gold: #f0a500;
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --text: #1a2535;
+    --muted: #6b7a8d;
+    --border: #dde2ea;
+    --success: #16a34a;
+    --danger: #dc2626;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nanum Gothic',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* HEADER */
+  header {
+    background: var(--primary);
+    color: white;
+    padding: 0;
+    position: sticky; top:0; z-index:100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  }
+  .header-inner {
+    max-width: 900px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px;
+  }
+  .header-title { font-family:'Black Han Sans',sans-serif; font-size:18px; letter-spacing:1px; }
+  .header-title span { color:var(--gold); }
+  .header-sub { font-size:12px; opacity:0.7; margin-top:2px; }
+  .header-right { display:flex; gap:8px; align-items:center; }
+
+  /* NAV TABS */
+  nav {
+    background: var(--primary);
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .nav-inner {
+    max-width:900px; margin:0 auto;
+    display:flex; gap:0;
+  }
+  .nav-btn {
+    flex:1; background:none; border:none; color:rgba(255,255,255,0.65);
+    padding:10px 4px; font-family:'Nanum Gothic',sans-serif; font-size:13px; font-weight:700;
+    cursor:pointer; transition:all .2s; border-bottom:3px solid transparent;
+  }
+  .nav-btn.active { color:#fff; border-bottom-color:var(--gold); }
+  .nav-btn:hover { color:#fff; }
+
+  /* MAIN */
+  main { max-width:900px; margin:0 auto; padding:16px; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
+  /* CARDS */
+  .card {
+    background:var(--card); border-radius:12px; padding:16px;
+    border:1px solid var(--border); margin-bottom:12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .card-title {
+    font-size:14px; font-weight:800; color:var(--primary);
+    margin-bottom:12px; display:flex; align-items:center; gap:6px;
+  }
+  .card-title::before { content:''; display:inline-block; width:4px; height:16px; background:var(--accent); border-radius:2px; }
+
+  /* BADGE */
+  .badge {
+    display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700;
+  }
+  .badge-win { background:#dcfce7; color:#16a34a; }
+  .badge-loss { background:#fee2e2; color:#dc2626; }
+  .badge-pending { background:#fef9c3; color:#a16207; }
+  .badge-live { background:#fef9c3; color:#a16207; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  /* SCHEDULE TABLE */
+  .schedule-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .schedule-table th { background:var(--primary); color:white; padding:8px 10px; text-align:center; font-weight:700; }
+  .schedule-table td { padding:9px 10px; border-bottom:1px solid var(--border); text-align:center; }
+  .schedule-table tr:last-child td { border-bottom:none; }
+  .schedule-table tr:hover td { background:#f8f9fc; }
+  .match-vs { font-weight:800; color:var(--primary); }
+  .match-score { font-size:15px; font-weight:800; }
+  .score-a { color:var(--accent); }
+  .score-b { color:var(--primary); }
+
+  /* STANDINGS TABLE */
+  .standings-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .standings-table th { background:var(--primary); color:white; padding:8px 6px; text-align:center; font-size:12px; }
+  .standings-table td { padding:10px 6px; border-bottom:1px solid var(--border); text-align:center; }
+  .standings-table tr:last-child td { border-bottom:none; }
+  .rank-1 td { background:#fffbeb; font-weight:800; }
+  .rank-2 td { background:#f8faff; }
+  .rank-badge { display:inline-flex; width:24px; height:24px; border-radius:50%; align-items:center; justify-content:center; font-weight:800; font-size:13px; }
+  .rank-badge.gold { background:var(--gold); color:white; }
+  .rank-badge.silver { background:#cbd5e1; color:#1e293b; }
+  .rank-badge.bronze { background:#c47722; color:white; }
+  .rank-badge.other { background:#e2e8f0; color:#475569; }
+  .school-name { font-weight:800; text-align:left !important; }
+
+  /* LEAGUE GRID */
+  .league-grid { overflow-x:auto; }
+  .league-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .league-table th { background:var(--primary); color:white; padding:7px 8px; text-align:center; }
+  .league-table td { padding:8px; border:1px solid var(--border); text-align:center; }
+  .league-table .school-col { font-weight:800; background:#f8f9fc; text-align:left; padding-left:10px; }
+  .self-cell { background:#e2e8f0; }
+  .score-cell { cursor:default; min-width:60px; }
+  .score-cell.won { background:#dcfce7; color:#15803d; font-weight:800; }
+  .score-cell.lost { background:#fee2e2; color:#dc2626; }
+  .score-cell.draw { background:#fef9c3; }
+
+  /* ADMIN */
+  .admin-form { display:flex; flex-direction:column; gap:10px; }
+  .admin-form label { font-size:13px; font-weight:700; color:var(--primary); margin-bottom:2px; display:block; }
+  .admin-form select, .admin-form input {
+    width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px;
+    font-family:'Nanum Gothic',sans-serif; font-size:14px; background:white; color:var(--text);
+  }
+  .score-row { display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center; }
+  .score-sep { font-size:20px; font-weight:800; color:var(--muted); text-align:center; }
+  .score-input { text-align:center; font-size:20px; font-weight:800; }
+
+  /* BUTTONS */
+  .btn {
+    padding:10px 18px; border-radius:8px; border:none; font-family:'Nanum Gothic',sans-serif;
+    font-size:14px; font-weight:700; cursor:pointer; transition:all .15s;
+  }
+  .btn-primary { background:var(--accent); color:white; }
+  .btn-primary:hover { background:#c73b3b; }
+  .btn-secondary { background:var(--primary); color:white; }
+  .btn-secondary:hover { background:#0f2540; }
+  .btn-sm { padding:5px 12px; font-size:12px; border-radius:6px; }
+  .btn-outline { background:transparent; border:1.5px solid var(--border); color:var(--muted); }
+  .btn-outline:hover { border-color:var(--primary); color:var(--primary); }
+  .btn-danger { background:var(--danger); color:white; }
+
+  /* LOGIN OVERLAY */
+  #login-overlay {
+    position:fixed; inset:0; background:rgba(15,25,45,0.85);
+    display:flex; align-items:center; justify-content:center; z-index:999;
+  }
+  .login-box {
+    background:white; border-radius:16px; padding:32px 28px; width:320px;
+    text-align:center;
+  }
+  .login-box h2 { font-family:'Black Han Sans',sans-serif; font-size:20px; color:var(--primary); margin-bottom:6px; }
+  .login-box p { font-size:13px; color:var(--muted); margin-bottom:20px; }
+  .login-box input {
+    width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px;
+    font-size:15px; margin-bottom:12px; text-align:center; letter-spacing:4px;
+    font-family:'Nanum Gothic',sans-serif;
+  }
+  .login-error { color:var(--danger); font-size:13px; margin-top:6px; }
+
+  /* TOAST */
+  #toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:#1a3a5c; color:white; padding:10px 20px; border-radius:30px;
+    font-size:13px; font-weight:700; opacity:0; transition:opacity .3s; z-index:9999;
+    pointer-events:none;
+  }
+  #toast.show { opacity:1; }
+
+  /* STATS ROW */
+  .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:12px; }
+  .stat-card { background:var(--card); border-radius:10px; padding:12px; text-align:center; border:1px solid var(--border); }
+  .stat-num { font-size:24px; font-weight:800; color:var(--primary); }
+  .stat-label { font-size:11px; color:var(--muted); margin-top:2px; }
+
+  /* FIREBASE STATUS */
+  .fb-status { display:flex; align-items:center; gap:5px; font-size:11px; }
+  .fb-dot { width:7px; height:7px; border-radius:50%; background:#16a34a; }
+  .fb-dot.offline { background:#dc2626; }
+
+  /* INFO SECTION */
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .info-item { font-size:13px; }
+  .info-item .label { color:var(--muted); font-size:11px; margin-bottom:3px; }
+  .info-item .value { font-weight:700; }
+
+  @media(max-width:600px) {
+    .info-grid { grid-template-columns:1fr; }
+    .score-row { grid-template-columns:1fr 30px 1fr; }
+    .header-title { font-size:15px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay" style="display:none;">
+  <div class="login-box">
+    <h2>🏓 운영진 로그인</h2>
+    <p>관리자 비밀번호를 입력하세요</p>
+    <input type="password" id="pw-input" placeholder="비밀번호" maxlength="20">
+    <button class="btn btn-primary" style="width:100%" onclick="tryLogin()">로그인</button>
+    <p class="login-error" id="login-error"></p>
+    <button class="btn btn-outline" style="width:100%; margin-top:8px;" onclick="closeLogin()">취소</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="header-title">🏓 구리남양주 <span>탁구대회</span></div>
+      <div class="header-sub">2025.05.30(토) · 별가람중학교 · 남중부</div>
+    </div>
+    <div class="header-right">
+      <span class="fb-status">
+        <span class="fb-dot" id="fb-dot"></span>
+        <span id="fb-status-text" style="color:rgba(255,255,255,0.7);font-size:11px;">연결중...</span>
+      </span>
+      <button class="btn btn-sm" id="admin-btn" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);" onclick="toggleAdmin()">⚙ 관리</button>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-inner">
+      <button class="nav-btn active" onclick="showTab('schedule')">경기일정</button>
+      <button class="nav-btn" onclick="showTab('standings')">순위표</button>
+      <button class="nav-btn" onclick="showTab('league')">리그표</button>
+      <button class="nav-btn" onclick="showTab('info')">대회정보</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+
+<!-- 경기일정 탭 -->
+<div id="tab-schedule" class="tab-content active">
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">총 경기</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-done">0</div><div class="stat-label">완료</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-remain">0</div><div class="stat-label">남은 경기</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">폴리그 경기 일정 (09:00~11:00)</div>
+    <table class="schedule-table">
+      <thead>
+        <tr><th>시간</th><th>탁 1~2</th><th>결과</th><th>탁 3~4</th><th>결과</th></tr>
+      </thead>
+      <tbody id="schedule-body"></tbody>
+    </table>
+  </div>
+
+  <!-- 관리자: 결과 입력 -->
+  <div class="card" id="admin-input-card" style="display:none; border:2px solid var(--accent);">
+    <div class="card-title">⚙ 경기 결과 입력</div>
+    <div class="admin-form">
+      <div>
+        <label>경기 선택</label>
+        <select id="match-select">
+          <option value="">-- 경기를 선택하세요 --</option>
+        </select>
+      </div>
+      <div id="score-entry" style="display:none;">
+        <label id="score-label">점수 입력</label>
+        <div class="score-row">
+          <input type="number" class="score-input" id="score-a" min="0" max="10" placeholder="0">
+          <div class="score-sep">:</div>
+          <input type="number" class="score-input" id="score-b" min="0" max="10" placeholder="0">
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="btn btn-primary" style="flex:1" onclick="submitResult()">결과 저장</button>
+          <button class="btn btn-outline" onclick="resetResult()">초기화</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 순위표 탭 -->
+<div id="tab-standings" class="tab-content">
+  <div class="card">
+    <div class="card-title">팀 순위 (폴리그 기준)</div>
+    <table class="standings-table">
+      <thead>
+        <tr>
+          <th style="width:36px">순위</th>
+          <th style="text-align:left;padding-left:10px">학교</th>
+          <th>승</th><th>패</th><th>실격</th>
+          <th>득실</th><th>승점</th>
+        </tr>
+      </thead>
+      <tbody id="standings-body"></tbody>
+    </table>
+    <p style="font-size:11px;color:var(--muted);margin-top:10px;">승점: 승리 2점 / 패배 1점 / 실격 0점</p>
+  </div>
+</div>
+
+<!-- 리그표 탭 -->
+<div id="tab-league" class="tab-content">
+  <div class="card">
+    <div class="card-title">폴리그 결과표</div>
+    <div class="league-grid">
+      <table class="league-table" id="league-table"></table>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px;">행=홈팀, 열=원정팀 / 가로줄 기준 점수</p>
+  </div>
+</div>
+
+<!-- 대회정보 탭 -->
+<div id="tab-info" class="tab-content">
+  <div class="card">
+    <div class="card-title">대회 개요</div>
+    <div class="info-grid">
+      <div class="info-item"><div class="label">대회일</div><div class="value">2025년 5월 30일 (토)</div></div>
+      <div class="info-item"><div class="label">장소</div><div class="value">별가람중학교</div></div>
+      <div class="info-item"><div class="label">종별</div><div class="value">남중부</div></div>
+      <div class="info-item"><div class="label">팀 수</div><div class="value">5팀</div></div>
+      <div class="info-item"><div class="label">경기방법</div><div class="value">예선 리그 / 토너먼트</div></div>
+      <div class="info-item"><div class="label">경기인원</div><div class="value">6명 (최대 10명)</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">참가 학교</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;" id="school-list"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">경기 규정</div>
+    <ol style="font-size:13px;line-height:2;padding-left:18px;color:var(--text);">
+      <li>5개 학교 폴리그 경기 후 순위 산정</li>
+      <li>2단식 3복식 순서로 경기 진행 (①복식→②복식→③단식→④단식→⑤복식)</li>
+      <li>6~8명 구성 명단에서 단식 출전선수도 복식 경기 출전 가능</li>
+      <li>1번부터 5번까지 모든 경기 결과를 순위 계산에 적용</li>
+      <li>모든 경기는 11점 3판 2선승제 (듀스 있음)</li>
+      <li>순위 결정: 승점 → 매치득실률 → 게임득실률 → 추첨</li>
+      <li>3, 4위전 없음 (공동 3위 처리)</li>
+      <li style="color:var(--danger);font-weight:700;">참석 선수 5명 이하: 1번 복식 기권 처리, 4명 이하: 몰수패 (0:3)</li>
+    </ol>
+    <div style="margin-top:10px;padding:8px 12px;background:#fef9c3;border-radius:8px;font-size:13px;font-weight:700;color:#a16207;">
+      🏅 승점: 승리 2점 / 패배 1점 / 실격 0점
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">문의</div>
+    <p style="font-size:14px;">마석중 교사 <strong>김효원</strong></p>
+    <p style="font-size:13px;color:var(--muted);margin-top:4px;">📞 010-6515-3004</p>
+  </div>
+</div>
+
+</main>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// ========================
+// FIREBASE 설정
+// ▼ 아래 firebaseConfig를 본인의 Firebase 프로젝트 설정으로 교체하세요 ▼
+// ========================
+const firebaseConfig = {
+  apiKey: "AIzaSyARrQwdk1zt7QrQe02v2zQb12LJ0OZTSiU",
+  authDomain: "gunam-tabletennis2026.firebaseapp.com",
+  databaseURL: "https://gunam-tabletennis2026-default-rtdb.firebaseio.com",
+  projectId: "gunam-tabletennis2026",
+  storageBucket: "gunam-tabletennis2026.firebasestorage.app",
+  messagingSenderId: "648320175855",
+  appId: "1:648320175855:web:d2311f8f98922e4c27151a"
+};
+// ========================
+
+const ADMIN_PASSWORD = "1234"; // ← 원하는 비밀번호로 변경하세요
+
+// 참가 학교
+const SCHOOLS = ["갈매중","광릉중","다산새봄중","마석중","퇴계원중"];
+const SCHOOL_LABELS = {
+  "갈매중":"갈",
+  "광릉중":"광",
+  "다산새봄중":"다산",
+  "마석중":"마",
+  "퇴계원중":"퇴"
+};
+
+// 경기 일정 (이미지 기반)
+const MATCHES = [
+  {id:"m1", time:"09:00", table:"1~2탁", teamA:"광릉중", teamB:"퇴계원중"},
+  {id:"m2", time:"09:00", table:"3~4탁", teamA:"다산새봄중", teamB:"마석중"},
+  {id:"m3", time:"09:30", table:"1~2탁", teamA:"갈매중", teamB:"퇴계원중"},
+  {id:"m4", time:"09:30", table:"3~4탁", teamA:"광릉중", teamB:"다산새봄중"},
+  {id:"m5", time:"10:00", table:"1~2탁", teamA:"갈매중", teamB:"마석중"},
+  {id:"m6", time:"10:00", table:"3~4탁", teamA:"퇴계원중", teamB:"다산새봄중"},
+  {id:"m7", time:"10:30", table:"1~2탁", teamA:"갈매중", teamB:"다산새봄중"},
+  {id:"m8", time:"10:30", table:"3~4탁", teamA:"마석중", teamB:"광릉중"},
+  {id:"m9", time:"11:00", table:"1~2탁", teamA:"갈매중", teamB:"광릉중"},
+  {id:"m10",time:"11:00", table:"3~4탁", teamA:"마석중", teamB:"퇴계원중"},
+];
+
+// ========================
+let db = null, isAdmin = false, results = {};
+
+function initFirebase() {
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    db.ref('.info/connected').on('value', snap => {
+      const connected = snap.val();
+      document.getElementById('fb-dot').className = 'fb-dot' + (connected ? '' : ' offline');
+      document.getElementById('fb-status-text').textContent = connected ? '실시간 연동' : '오프라인';
+    });
+    db.ref('results').on('value', snap => {
+      results = snap.val() || {};
+      renderAll();
+    });
+  } catch(e) {
+    document.getElementById('fb-dot').className = 'fb-dot offline';
+    document.getElementById('fb-status-text').textContent = '설정 필요';
+    renderAll();
+  }
+}
+
+function renderAll() {
+  renderSchedule();
+  renderStandings();
+  renderLeague();
+  renderMatchSelect();
+  renderSchools();
+}
+
+// ---- 탭 전환 ----
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const btns = document.querySelectorAll('.nav-btn');
+  const idx = ['schedule','standings','league','info'].indexOf(name);
+  if(idx >= 0) btns[idx].classList.add('active');
+}
+
+// ---- 관리자 ----
+function toggleAdmin() {
+  if(isAdmin) { isAdmin = false; document.getElementById('admin-input-card').style.display='none'; document.getElementById('admin-btn').textContent='⚙ 관리'; showToast('관리자 모드 해제'); return; }
+  document.getElementById('login-overlay').style.display='flex';
+  setTimeout(() => document.getElementById('pw-input').focus(), 100);
+}
+function tryLogin() {
+  const pw = document.getElementById('pw-input').value;
+  if(pw === ADMIN_PASSWORD) {
+    isAdmin = true;
+    document.getElementById('login-overlay').style.display='none';
+    document.getElementById('pw-input').value='';
+    document.getElementById('login-error').textContent='';
+    document.getElementById('admin-input-card').style.display='block';
+    document.getElementById('admin-btn').textContent='⚙ 관리중';
+    showTab('schedule');
+    showToast('관리자 로그인 성공 ✓');
+  } else {
+    document.getElementById('login-error').textContent='비밀번호가 틀렸습니다.';
+  }
+}
+function closeLogin() {
+  document.getElementById('login-overlay').style.display='none';
+  document.getElementById('pw-input').value='';
+  document.getElementById('login-error').textContent='';
+}
+document.getElementById('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
+
+// ---- 경기 일정 렌더 ----
+function renderSchedule() {
+  // 시간별로 묶기
+  const timeMap = {};
+  MATCHES.forEach(m => {
+    if(!timeMap[m.time]) timeMap[m.time] = {};
+    timeMap[m.time][m.table.includes('1~2') ? 'left' : 'right'] = m;
+  });
+
+  let html = '';
+  const times = [...new Set(MATCHES.map(m => m.time))];
+  let done=0;
+  MATCHES.forEach(m => { if(results[m.id]) done++; });
+  document.getElementById('stat-total').textContent = MATCHES.length;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-remain').textContent = MATCHES.length - done;
+
+  times.forEach(time => {
+    const left = timeMap[time].left;
+    const right = timeMap[time].right;
+
+    const renderCell = (m) => {
+      if(!m) return '<td></td><td></td>';
+      const r = results[m.id];
+      let badge = '<span class="badge badge-pending">대기</span>';
+      let score = '';
+      if(r) {
+        const aWin = parseInt(r.scoreA) > parseInt(r.scoreB);
+        badge = aWin ? `<span class="badge badge-win">${m.teamA} 승</span>` : `<span class="badge badge-loss">${m.teamB} 승</span>`;
+        score = `<span class="match-score"><span class="score-a">${r.scoreA}</span>:<span class="score-b">${r.scoreB}</span></span>`;
+      }
+      return `<td class="match-vs">${m.teamA} vs ${m.teamB}</td><td>${r ? score+'<br>'+badge : badge}</td>`;
+    };
+
+    html += `<tr><td style="font-weight:700;color:var(--primary)">${time}</td>`;
+    html += renderCell(left);
+    html += renderCell(right);
+    html += '</tr>';
+  });
+  document.getElementById('schedule-body').innerHTML = html;
+}
+
+// ---- 순위 계산 ----
+function calcStandings() {
+  const stats = {};
+  SCHOOLS.forEach(s => { stats[s] = {wins:0,losses:0,forfeits:0,pointsFor:0,pointsAgainst:0,gamesFor:0,gamesAgainst:0}; });
+  MATCHES.forEach(m => {
+    const r = results[m.id];
+    if(!r) return;
+    const sa = parseInt(r.scoreA), sb = parseInt(r.scoreB);
+    if(sa > sb) { stats[m.teamA].wins++; stats[m.teamB].losses++; }
+    else if(sb > sa) { stats[m.teamB].wins++; stats[m.teamA].losses++; }
+    stats[m.teamA].gamesFor += sa; stats[m.teamA].gamesAgainst += sb;
+    stats[m.teamB].gamesFor += sb; stats[m.teamB].gamesAgainst += sa;
+  });
+  return SCHOOLS.map(s => ({
+    school: s,
+    ...stats[s],
+    points: stats[s].wins * 2 + stats[s].losses * 1
+  })).sort((a,b) => {
+    if(b.points !== a.points) return b.points - a.points;
+    const aDiff = a.gamesFor - a.gamesAgainst;
+    const bDiff = b.gamesFor - b.gamesAgainst;
+    return bDiff - aDiff;
+  });
+}
+
+function renderStandings() {
+  const data = calcStandings();
+  const rankBadges = ['gold','silver','bronze','other','other'];
+  let html = '';
+  data.forEach((row, i) => {
+    const diff = row.gamesFor - row.gamesAgainst;
+    html += `<tr class="${i===0?'rank-1':i===1?'rank-2':''}">
+      <td><span class="rank-badge ${rankBadges[i]}">${i+1}</span></td>
+      <td class="school-name">${row.school}</td>
+      <td>${row.wins}</td><td>${row.losses}</td><td>${row.forfeits}</td>
+      <td style="color:${diff>=0?'var(--success)':'var(--danger)'};">${diff>=0?'+':''}${diff}</td>
+      <td><strong>${row.points}</strong></td>
+    </tr>`;
+  });
+  document.getElementById('standings-body').innerHTML = html;
+}
+
+// ---- 리그표 렌더 ----
+function renderLeague() {
+  let header = '<tr><th style="background:var(--primary);color:white;"></th>';
+  SCHOOLS.forEach(s => { header += `<th style="background:var(--primary);color:white;font-size:11px;">${SCHOOL_LABELS[s]||s}</th>`; });
+  header += '</tr>';
+
+  let rows = '';
+  SCHOOLS.forEach((rowSchool, ri) => {
+    rows += `<tr><td class="school-col">${rowSchool}</td>`;
+    SCHOOLS.forEach((colSchool, ci) => {
+      if(ri === ci) { rows += '<td class="self-cell"></td>'; return; }
+      const match = MATCHES.find(m =>
+        (m.teamA === rowSchool && m.teamB === colSchool) ||
+        (m.teamB === rowSchool && m.teamA === colSchool)
+      );
+      if(!match) { rows += '<td>-</td>'; return; }
+      const r = results[match.id];
+      if(!r) { rows += '<td class="score-cell">-</td>'; return; }
+      const myScore = match.teamA === rowSchool ? r.scoreA : r.scoreB;
+      const oppScore = match.teamA === rowSchool ? r.scoreB : r.scoreA;
+      const won = parseInt(myScore) > parseInt(oppScore);
+      rows += `<td class="score-cell ${won?'won':'lost'}">${myScore}:${oppScore}</td>`;
+    });
+    rows += '</tr>';
+  });
+
+  document.getElementById('league-table').innerHTML = header + rows;
+}
+
+// ---- 경기 선택 드롭다운 ----
+function renderMatchSelect() {
+  const sel = document.getElementById('match-select');
+  let html = '<option value="">-- 경기를 선택하세요 --</option>';
+  MATCHES.forEach(m => {
+    const r = results[m.id];
+    const done = r ? ` ✓ (${r.scoreA}:${r.scoreB})` : '';
+    html += `<option value="${m.id}">${m.time} [${m.table}] ${m.teamA} vs ${m.teamB}${done}</option>`;
+  });
+  sel.innerHTML = html;
+}
+
+document.getElementById('match-select').addEventListener('change', function() {
+  const val = this.value;
+  if(!val) { document.getElementById('score-entry').style.display='none'; return; }
+  const m = MATCHES.find(x => x.id === val);
+  document.getElementById('score-label').textContent = `${m.teamA}   :   ${m.teamB}`;
+  const r = results[val];
+  document.getElementById('score-a').value = r ? r.scoreA : '';
+  document.getElementById('score-b').value = r ? r.scoreB : '';
+  document.getElementById('score-entry').style.display='block';
+});
+
+function submitResult() {
+  const matchId = document.getElementById('match-select').value;
+  if(!matchId) { showToast('경기를 선택하세요'); return; }
+  const sa = parseInt(document.getElementById('score-a').value);
+  const sb = parseInt(document.getElementById('score-b').value);
+  if(isNaN(sa)||isNaN(sb)||sa<0||sb<0) { showToast('올바른 점수를 입력하세요'); return; }
+  if(sa === sb) { showToast('동점은 입력할 수 없습니다'); return; }
+
+  if(db) {
+    db.ref('results/' + matchId).set({scoreA: sa, scoreB: sb, updatedAt: Date.now()})
+      .then(() => { showToast('결과 저장 완료 ✓'); document.getElementById('match-select').value=''; document.getElementById('score-entry').style.display='none'; })
+      .catch(e => { showToast('저장 실패: ' + e.message); });
+  } else {
+    results[matchId] = {scoreA: sa, scoreB: sb};
+    renderAll();
+    showToast('결과 저장됨 (오프라인 모드)');
+    document.getElementById('match-select').value='';
+    document.getElementById('score-entry').style.display='none';
+  }
+}
+
+function resetResult() {
+  const matchId = document.getElementById('match-select').value;
+  if(!matchId) return;
+  if(!confirm('이 경기 결과를 초기화하시겠습니까?')) return;
+  if(db) {
+    db.ref('results/' + matchId).remove().then(() => showToast('초기화 완료'));
+  } else {
+    delete results[matchId];
+    renderAll();
+    showToast('초기화됨 (오프라인 모드)');
+  }
+  document.getElementById('score-entry').style.display='none';
+  document.getElementById('match-select').value='';
+}
+
+function renderSchools() {
+  const colors = ['#e0f2fe','#dcfce7','#fef9c3','#fce7f3','#ede9fe'];
+  const tc = ['#0369a1','#15803d','#a16207','#9d174d','#7c3aed'];
+  document.getElementById('school-list').innerHTML = SCHOOLS.map((s,i) =>
+    `<span style="background:${colors[i]};color:${tc[i]};padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;">${s}</span>`
+  ).join('');
+}
+
+// ---- 토스트 ----
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// INIT
+initFirebase();
+</script>
+</body>
+</html>
