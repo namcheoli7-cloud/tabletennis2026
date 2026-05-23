@@ -83,7 +83,6 @@ main{max-width:800px;margin:0 auto;padding:14px 12px;}
 .match-score-big .sc{color:var(--muted);}
 .match-score-big .sb{color:var(--primary);}
 
-.elapsed{text-align:center;font-size:11px;color:var(--muted);margin-bottom:4px;}
 
 .winner-banner{background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:7px;text-align:center;font-weight:800;font-size:14px;color:#166534;}
 .forfeit-banner{background:#fef9c3;border:1px solid #fcd34d;border-radius:8px;padding:7px;text-align:center;font-size:13px;font-weight:700;color:#a16207;}
@@ -147,7 +146,7 @@ select,input[type=text],input[type=password],input[type=number]{
 /* 세트 입력 */
 .set-input-wrap{display:flex;flex-direction:column;gap:7px;margin-bottom:10px;}
 .set-row{
-  display:grid;grid-template-columns:50px 1fr 30px 1fr 28px 28px;
+  display:grid;grid-template-columns:50px 1fr 30px 50px 50px;
   align-items:center;gap:6px;
   padding:8px 10px;background:#f8f9fc;border-radius:8px;border:1.5px solid var(--border);
 }
@@ -239,13 +238,12 @@ select,input[type=text],input[type=password],input[type=number]{
       <div id="set-input-area" style="display:none">
         <div id="set-team-header" style="margin-bottom:8px;font-size:13px;text-align:center;"></div>
         <!-- 컬럼 헤더 -->
-        <div style="display:grid;grid-template-columns:50px 1fr 30px 1fr 28px 28px;gap:6px;padding:0 10px;margin-bottom:4px;font-size:11px;font-weight:700;color:var(--muted);">
-          <div style="text-align:center">세트</div>
-          <div id="col-a" style="text-align:center"></div>
+        <div style="display:grid;grid-template-columns:50px 1fr 30px 50px 50px;gap:6px;padding:0 10px;margin-bottom:4px;font-size:11px;font-weight:700;color:var(--muted);text-align:center;">
+          <div>세트</div>
+          <div>승리 학교</div>
           <div></div>
-          <div id="col-b" style="text-align:center"></div>
-          <div style="text-align:center">A</div>
-          <div style="text-align:center">B</div>
+          <div id="col-a"></div>
+          <div id="col-b"></div>
         </div>
         <div class="set-input-wrap" id="set-input-wrap"></div>
         <div style="display:flex;gap:8px;">
@@ -294,16 +292,16 @@ select,input[type=text],input[type=password],input[type=number]{
       <thead><tr>
         <th style="width:36px">순위</th>
         <th style="text-align:left;padding-left:8px">학교</th>
-        <th title="승">승</th>
-        <th title="패">패</th>
-        <th title="매치 득실 (승-패)">매치<br>득실</th>
-        <th title="세트 득실">세트<br>득실</th>
-        <th title="게임(점수) 득실">게임<br>득실</th>
+        <th>승</th>
+        <th>패</th>
+        <th title="매치 득실">매치<br>득실</th>
+        <th title="게임(세트) 득실">게임<br>득실</th>
+        <th title="점수 득실">점수<br>득실</th>
         <th>승점</th>
       </tr></thead>
       <tbody id="stn-body"></tbody>
     </table>
-    <p style="font-size:11px;color:var(--muted);margin-top:8px;">승점: 승 2점 / 패 1점 / 실격 0점 &nbsp;·&nbsp; 동점 시 매치득실 → 세트득실 → 게임득실 순</p>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px;">승점: 승 2점 / 패 1점 / 실격 0점 &nbsp;·&nbsp; 동점 시: 매치득실 → 게임득실 → 점수득실 → 추첨</p>
   </div>
 
   <!-- 리그표 -->
@@ -349,7 +347,7 @@ select,input[type=text],input[type=password],input[type=number]{
       <li>5개 학교 폴리그 후 순위 산정</li>
       <li>복복단단복 5세트 모두 진행, 결과 전부 순위 계산에 반영</li>
       <li>각 세트: 11점 3판 2선승제 (듀스 있음)</li>
-      <li>순위 결정: 승점 → 매치득실률 → 세트득실률 → 게임득실률 → 추첨</li>
+      <li>순위 결정: 승점 → 매치득실 → 게임득실 → 점수득실 → 추첨</li>
       <li>3·4위전 없음 (공동 3위)</li>
       <li style="color:var(--danger);font-weight:700;">참석 5명 이하: 1번 복식 기권 / 4명 이하: 몰수패(0:5)</li>
     </ol>
@@ -540,7 +538,7 @@ function renderCourts(){
     const cardCls = done?'done':'live';
     const badgeTxt = done?'완료':'진행중';
 
-    const elapsed = isLive ? `<div class="elapsed">⏱ ${elapsedStr(m)}</div>` : '';
+
     const banner  = (done&&winner)
       ? `<div class="winner-banner">🏆 ${winner==='A'?m.teamA:m.teamB} 승 (${wa}:${wb})</div>` : '';
 
@@ -554,23 +552,13 @@ function renderCourts(){
             <span class="team-b">${m.teamB}</span>
           </div>
           <div class="match-score-big"><span class="sa">${wa}</span><span class="sc"> : </span><span class="sb">${wb}</span></div>
-          ${elapsed}
           ${banner}
         </div>
       </div>`;
   }).join('');
 }
 
-// 경과시간 1초마다 갱신 (미완료 매치가 현황판에 있을 때만)
-setInterval(()=>{
-  const liveAB = currentMatchByGroup('AB');
-  const liveCD = currentMatchByGroup('CD');
-  const hasLive = [liveAB, liveCD].some(m => m && !isMatchDone(m.id));
-  if(hasLive){
-    // 타이머 텍스트만 교체 (전체 re-render 최소화)
-    renderCourts();
-  }
-}, 1000);
+
 
 // ── 경기일정 ──
 function renderSchedule(){
@@ -607,7 +595,7 @@ function renderSchedule(){
         const wn=calcMatchWinner(m.id)==='A'?m.teamA:m.teamB;
         badge=`<span class="badge bw">${wn} 승 (${wa}:${wb})</span>`;
       } else if(live){
-        badge=`<span class="badge bgo">진행중 ${wa}:${wb}</span>`;
+        badge=`<span class="badge bgo">진행중</span>`;
       }
       return `<td style="font-weight:800">${m.teamA}<br><span style="font-size:11px;color:var(--muted)">vs ${m.teamB}</span></td><td>${badge}</td>`;
     };
@@ -635,9 +623,10 @@ function calcStandings(){
   });
   return SCHOOLS.map(sc=>({school:sc,...s[sc],pts:s[sc].w*2+s[sc].l}))
     .sort((a,b)=>{
-      if(b.pts!==a.pts) return b.pts-a.pts;
-      const sd=(b.sf-b.sa)-(a.sf-a.sa); if(sd!==0) return sd;
-      return (b.gf-b.ga)-(a.gf-a.ga);
+      if(b.pts!==a.pts) return b.pts-a.pts;                        // 1) 승점
+      const md=(b.w-b.l)-(a.w-a.l); if(md!==0) return md;         // 2) 매치득실
+      const gd=(b.sf-b.sa)-(a.sf-a.sa); if(gd!==0) return gd;     // 3) 게임득실
+      return (b.gf-b.ga)-(a.gf-a.ga);                              // 4) 점수득실
     });
 }
 
@@ -645,15 +634,17 @@ function renderStandings(){
   const data=calcStandings();
   const rb=['rg','rs','rb','ro','ro'];
   document.getElementById('stn-body').innerHTML=data.map((r,i)=>{
-    const md=r.w-r.l, sd=r.sf-r.sa, gd=r.gf-r.ga;
+    const matchDiff=r.w-r.l;          // 매치 득실
+    const gameDiff=r.sf-r.sa;         // 게임(세트) 득실
+    const scoreDiff=r.gf-r.ga;        // 점수 득실
     const fmt=(v)=>(v>=0?'+':'')+v;
     return `<tr class="${i===0?'r1':i===1?'r2':''}">
       <td><span class="rbadge ${rb[i]}">${i+1}</span></td>
       <td class="sn">${r.school}</td>
       <td>${r.w}</td><td>${r.l}</td>
-      <td style="color:${md>=0?'var(--ok)':'var(--danger)'}">${fmt(md)}</td>
-      <td style="color:${sd>=0?'var(--ok)':'var(--danger)'}">${fmt(sd)}</td>
-      <td style="color:${gd>=0?'var(--ok)':'var(--danger)'}">${fmt(gd)}</td>
+      <td style="color:${matchDiff>=0?'var(--ok)':'var(--danger)'}">${fmt(matchDiff)}</td>
+      <td style="color:${gameDiff>=0?'var(--ok)':'var(--danger)'}">${fmt(gameDiff)}</td>
+      <td style="color:${scoreDiff>=0?'var(--ok)':'var(--danger)'}">${fmt(scoreDiff)}</td>
       <td><strong>${r.pts}</strong></td>
     </tr>`;
   }).join('');
@@ -705,8 +696,8 @@ function onMatchChange(){
     `<span style="color:var(--accent);font-weight:800">${m.teamA}</span>
      <span style="color:var(--muted);font-size:12px;margin:0 6px">vs</span>
      <span style="color:var(--primary);font-weight:800">${m.teamB}</span>`;
-  document.getElementById('col-a').textContent = m.teamA+' 점수';
-  document.getElementById('col-b').textContent = m.teamB+' 점수';
+  document.getElementById('col-a').textContent = m.teamA;
+  document.getElementById('col-b').textContent = m.teamB;
 
   // 5세트 전부 입력 행
   let html='';
@@ -724,11 +715,8 @@ function onMatchChange(){
         <option value="B" ${curW==='B'?'selected':''}>${m.teamB} 승</option>
       </select>
       <div class="set-vs">:</div>
-      <div style="display:contents">
-        <!-- scA, scB는 11점제 게임 스코어 누적 예시: 예) 3판 합산 또는 마지막 판 -->
-      </div>
-      <input type="number" class="set-sc" id="sa${i}" min="0" max="99" value="${curSA}" placeholder="A">
-      <input type="number" class="set-sc" id="sb${i}" min="0" max="99" value="${curSB}" placeholder="B">
+      <input type="number" class="set-sc" id="sa${i}" min="0" max="99" value="${curSA}" placeholder="-">
+      <input type="number" class="set-sc" id="sb${i}" min="0" max="99" value="${curSB}" placeholder="-">
     </div>`;
   }
   document.getElementById('set-input-wrap').innerHTML=html;
