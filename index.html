@@ -22,24 +22,31 @@ header{
 }
 .header-inner{
   max-width:800px;margin:0 auto;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px 10px;
+  padding:12px 16px 10px;
 }
-.htitle-block{}
+/* 1행: 제목 + 버튼들 */
+.header-row1{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:4px;
+}
 .htitle{
   font-family:'Black Han Sans',sans-serif;
-  font-size:26px;letter-spacing:2px;line-height:1.15;
+  font-size:22px;letter-spacing:1.5px;line-height:1.2;
 }
 .htitle .hl{color:var(--gold);}
-.hsub{font-size:12px;opacity:.7;margin-top:3px;letter-spacing:.3px;}
-.hright{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.fb-pill{
-  display:flex;align-items:center;gap:5px;
-  background:rgba(255,255,255,.12);border-radius:20px;padding:4px 10px;
+/* 2행: 날짜·장소 + fb상태 */
+.header-row2{
+  display:flex;align-items:center;justify-content:space-between;
 }
-.fb-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex-shrink:0;}
+.hsub{font-size:11px;opacity:.72;letter-spacing:.2px;}
+.hright{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.fb-pill{
+  display:flex;align-items:center;gap:4px;
+  background:rgba(255,255,255,.12);border-radius:20px;padding:3px 8px;
+}
+.fb-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);flex-shrink:0;}
 .fb-dot.off{background:var(--danger);}
-.fb-txt{font-size:11px;color:rgba(255,255,255,.75);}
+.fb-txt{font-size:10px;color:rgba(255,255,255,.75);}
 
 nav{background:rgba(0,0,0,.18);border-top:1px solid rgba(255,255,255,.1);}
 .nav-inner{max-width:800px;margin:0 auto;display:flex;}
@@ -191,21 +198,25 @@ select,input[type=text],input[type=password],input[type=number]{
 <!-- ── 헤더 ── -->
 <header>
   <div class="header-inner">
-    <div class="htitle-block">
+    <!-- 1행: 대회명 + 버튼 -->
+    <div class="header-row1">
       <div class="htitle">🏓 구리남양주 <span class="hl">탁구대회</span></div>
-      <div class="hsub">2026년 5월 30일 (토) &nbsp;·&nbsp; 별가람중학교 &nbsp;·&nbsp; 남중부</div>
+      <div class="hright">
+        <button class="btn btn-sm"
+          style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);white-space:nowrap;"
+          onclick="toggleQR()">📱 QR 공유</button>
+        <button class="btn btn-sm" id="abtn"
+          style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);"
+          onclick="toggleAdmin()">⚙ 관리</button>
+      </div>
     </div>
-    <div class="hright">
+    <!-- 2행: 날짜·장소 + 연결상태 -->
+    <div class="header-row2">
+      <div class="hsub">2026. 5. 30(토) &nbsp;·&nbsp; 별가람중학교 &nbsp;·&nbsp; 남중부</div>
       <div class="fb-pill">
         <span class="fb-dot" id="fb-dot"></span>
         <span class="fb-txt" id="fb-txt">연결중</span>
       </div>
-      <button class="btn btn-sm"
-        style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);"
-        onclick="toggleQR()">📱 QR</button>
-      <button class="btn btn-sm" id="abtn"
-        style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);"
-        onclick="toggleAdmin()">⚙ 관리</button>
     </div>
   </div>
   <nav>
