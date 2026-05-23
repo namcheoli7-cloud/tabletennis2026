@@ -239,7 +239,7 @@ select,input[type=text],input[type=password],input[type=number]{
         <div id="set-team-header" style="margin-bottom:8px;font-size:13px;text-align:center;"></div>
         <!-- 컬럼 헤더 -->
         <div style="display:grid;grid-template-columns:50px 1fr 30px 50px 50px;gap:6px;padding:0 10px;margin-bottom:4px;font-size:11px;font-weight:700;color:var(--muted);text-align:center;">
-          <div>세트</div>
+          <div>게임</div>
           <div>승리 학교</div>
           <div></div>
           <div id="col-a"></div>
@@ -250,7 +250,7 @@ select,input[type=text],input[type=password],input[type=number]{
           <button class="btn btn-p" style="flex:1" onclick="submitAllSets()">💾 저장</button>
           <button class="btn btn-o btn-sm" onclick="clearMatchResult()">초기화</button>
         </div>
-        <p style="font-size:11px;color:var(--muted);margin-top:6px;">A·B열: 세트 내 게임 스코어 (예: 11-8이면 A=11, B=8)</p>
+        <p style="font-size:11px;color:var(--muted);margin-top:6px;">A·B열: 해당 게임의 점수 합계 (예: 2-0으로 이겼으면 A=2, B=0)</p>
       </div>
     </div>
 
@@ -327,7 +327,7 @@ select,input[type=text],input[type=password],input[type=number]{
     </div>
   </div>
   <div class="card">
-    <div class="ctitle">세트 진행 방식 (복복단단복 · 5세트 전부 진행)</div>
+    <div class="ctitle">게임 진행 방식 (복복단단복 · 5게임 전부 진행)</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center;">
       <span style="background:#fce7f3;color:#be185d;padding:5px 12px;border-radius:8px;font-weight:800;font-size:13px;">①복식</span>
       <span style="color:var(--muted);">→</span>
@@ -339,17 +339,17 @@ select,input[type=text],input[type=password],input[type=number]{
       <span style="color:var(--muted);">→</span>
       <span style="background:#fce7f3;color:#be185d;padding:5px 12px;border-radius:8px;font-weight:800;font-size:13px;">⑤복식</span>
     </div>
-    <p style="font-size:12px;color:var(--muted);">5세트 모두 진행 (중간 3:0 이후에도 계속) · 각 세트: 11점 3판 2선승제</p>
+    <p style="font-size:12px;color:var(--muted);">5게임 모두 진행 (중간 3:0 이후에도 계속) · 각 게임: 11점 3판 2선승제</p>
   </div>
   <div class="card">
     <div class="ctitle">경기 규정</div>
     <ol style="font-size:13px;line-height:2.1;padding-left:18px;">
       <li>5개 학교 폴리그 후 순위 산정</li>
-      <li>복복단단복 5세트 모두 진행, 결과 전부 순위 계산에 반영</li>
-      <li>각 세트: 11점 3판 2선승제 (듀스 있음)</li>
+      <li>복복단단복 5게임 모두 진행, 결과 전부 순위 계산에 반영</li>
+      <li>각 게임: 11점 3판 2선승제 (듀스 있음)</li>
       <li>순위 결정: 승점 → 매치득실 → 게임득실 → 점수득실 → 추첨</li>
       <li>3·4위전 없음 (공동 3위)</li>
-      <li style="color:var(--danger);font-weight:700;">참석 5명 이하: 1번 복식 기권 / 4명 이하: 몰수패(0:5)</li>
+      <li style="color:var(--danger);font-weight:700;">참석 5명 이하: 1번 복식 기권 / 4명 이하: 몰수패</li>
     </ol>
     <div style="margin-top:10px;padding:8px 12px;background:#fef9c3;border-radius:8px;font-size:13px;font-weight:700;color:#a16207;">
       🏅 승점: 승리 2점 / 패배 1점 / 실격 0점
@@ -357,8 +357,7 @@ select,input[type=text],input[type=password],input[type=number]{
   </div>
   <div class="card">
     <div class="ctitle">문의</div>
-    <p style="font-size:14px;">마석중 교사 <strong>김효원</strong></p>
-    <p style="font-size:12px;color:var(--muted);margin-top:3px;">📞 010-6515-3004</p>
+    <p style="font-size:14px;">마석중학교 <strong>김효원</strong></p>
   </div>
 </div>
 
@@ -381,7 +380,7 @@ const ADMIN_PW = "1234"; // ← 변경하세요
 
 const SCHOOLS = ["갈매중","광릉중","다산새봄중","마석중","퇴계원중"];
 // 5세트 모두 진행 (3:0 이후에도 계속)
-const SET_LABELS = ["①복식","②복식","③단식","④단식","⑤복식"];
+const SET_LABELS = ["①복","②복","③단","④단","⑤복"];
 
 // 경기 일정 (사진 기준)
 const MATCHES = [
@@ -534,13 +533,17 @@ function renderCourts(){
         </div>`;
     }
 
+    // 이 그룹(1·2탁 or 3·4탁)의 모든 매치가 완료됐는지
+    const allDone = MATCHES.filter(x=>x.group===g.id).every(x=>isMatchDone(x.id));
     const headCls = done?'h-done':'h-live';
     const cardCls = done?'done':'live';
     const badgeTxt = done?'완료':'진행중';
 
-
-    const banner  = (done&&winner)
-      ? `<div class="winner-banner">🏆 ${winner==='A'?m.teamA:m.teamB} 승 (${wa}:${wb})</div>` : '';
+    const banner = allDone
+      ? `<div class="winner-banner">🏁 경기 종료</div>`
+      : (done&&winner)
+        ? `<div class="winner-banner">🏆 ${winner==='A'?m.teamA:m.teamB} 승 (${wa}:${wb})</div>`
+        : '';
 
     return `
       <div class="court-block ${cardCls}">
@@ -742,7 +745,22 @@ function submitAllSets(){
       update['s'+i]=null; update['sa'+i]=null; update['sb'+i]=null;
     }
   }
-  if(!hasAny){showToast('최소 1세트 이상 입력하세요');return;}
+  if(!hasAny){showToast('최소 1게임 이상 입력하세요');return;}
+  // 유효성 검사: 승리팀과 점수가 일치하는지 확인
+  for(let i=1;i<=5;i++){
+    const sw=document.getElementById('sw'+i);
+    const sa=document.getElementById('sa'+i);
+    const sb=document.getElementById('sb'+i);
+    if(!sw||!sw.value) continue;
+    const va=parseInt(sa.value), vb=parseInt(sb.value);
+    if(isNaN(va)||isNaN(vb)) continue; // 점수 미입력은 통과
+    if(sw.value==='A' && va<=vb){
+      showToast(SET_LABELS[i-1]+': 승리팀 점수가 더 높아야 합니다');return;
+    }
+    if(sw.value==='B' && vb<=va){
+      showToast(SET_LABELS[i-1]+': 승리팀 점수가 더 높아야 합니다');return;
+    }
+  }
   // null 제거
   Object.keys(update).forEach(k=>{if(update[k]===null)delete update[k];});
   // 첫 저장 시 assignedAt 기록 (타이머 기준점)
