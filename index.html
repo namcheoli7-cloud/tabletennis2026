@@ -153,8 +153,8 @@ select,input[type=text],input[type=password],input[type=number]{
 /* 세트 입력 */
 .set-input-wrap{display:flex;flex-direction:column;gap:7px;margin-bottom:10px;}
 .set-row{
-  display:grid;grid-template-columns:50px 1fr 28px 28px;
-  align-items:center;gap:6px;
+  display:grid;grid-template-columns:52px 1fr 36px 36px;
+  align-items:center;gap:8px;
   padding:8px 10px;background:#f8f9fc;border-radius:8px;border:1.5px solid var(--border);
 }
 .set-row.done{background:#f0fdf4;border-color:#86efac;}
@@ -252,9 +252,9 @@ select,input[type=text],input[type=password],input[type=number]{
       <div id="set-input-area" style="display:none">
         <div id="set-team-header" style="margin-bottom:8px;font-size:13px;text-align:center;"></div>
         <!-- 컬럼 헤더 -->
-        <div style="display:grid;grid-template-columns:50px 1fr 28px 28px;gap:6px;padding:0 10px;margin-bottom:4px;font-size:11px;font-weight:700;color:var(--muted);text-align:center;">
+        <div id="col-header" style="display:grid;grid-template-columns:52px 1fr 36px 36px;gap:8px;padding:0 10px;margin-bottom:4px;font-size:11px;font-weight:700;color:var(--muted);text-align:center;">
           <div>매치</div>
-          <div>승리 학교</div>
+          <div style="text-align:left">승리 학교</div>
           <div id="col-a"></div>
           <div id="col-b"></div>
         </div>
@@ -263,7 +263,7 @@ select,input[type=text],input[type=password],input[type=number]{
           <button class="btn btn-p" style="flex:1" onclick="submitAllSets()">💾 저장</button>
           <button class="btn btn-o btn-sm" onclick="clearMatchResult()">초기화</button>
         </div>
-        <p style="font-size:11px;color:var(--muted);margin-top:6px;">A·B열: 게임 수 입력 (예: 2:0으로 이겼으면 A=2, B=0 / 2:1이면 A=2, B=1)</p>
+        <p style="font-size:11px;color:var(--muted);margin-top:6px;">게임 수 예시: 2-0 승 → A=2, B=0 &nbsp;/&nbsp; 2-1 승 → A=2, B=1</p>
       </div>
     </div>
 
@@ -313,7 +313,7 @@ select,input[type=text],input[type=password],input[type=number]{
       </tr></thead>
       <tbody id="stn-body"></tbody>
     </table>
-    <p style="font-size:11px;color:var(--muted);margin-top:8px;">승점: 승 2점 / 패 1점 / 실격 0점 &nbsp;·&nbsp; 동점 시: 매치득실 → 게임득실 → 추첨</p>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px;">승점: 승 2점 / 패 1점 / 실격 0점 &nbsp;·&nbsp; 동점 시: 매치득실 → 게임득실 → 점수득실 → 추첨 (순위표에는 점수득실 미표시)</p>
   </div>
 
   <!-- 리그표 -->
@@ -359,7 +359,7 @@ select,input[type=text],input[type=password],input[type=number]{
       <li>5개 학교 폴리그 후 순위 산정</li>
       <li>복복단단복 5게임 모두 진행, 결과 전부 순위 계산에 반영</li>
       <li>각 게임: 11점 3판 2선승제 (듀스 있음)</li>
-      <li>순위 결정: 승점 → 매치득실 → 게임득실 → 추첨</li>
+      <li>순위 결정: 승점 → 매치득실 → 게임득실 → 점수득실 → 추첨</li>
       <li>3·4위전 없음 (공동 3위)</li>
       <li style="color:var(--danger);font-weight:700;">참석 5명 이하: 1번 복식 기권 / 4명 이하: 몰수패</li>
     </ol>
@@ -704,19 +704,6 @@ function populateAdminSelects(){
   });
 }
 
-// 승리팀 선택 시 게임 수 자동 제안 (2:0 기본, 이미 입력 있으면 유지)
-function syncGameScore(i, teamA, teamB){
-  const sw = document.getElementById('sw'+i);
-  const ga = document.getElementById('ga'+i);
-  const gb = document.getElementById('gb'+i);
-  if(!sw||!ga||!gb) return;
-  // 아직 아무것도 안 입력됐으면 2:0 기본값 제안
-  if(sw.value && !ga.value && !gb.value){
-    ga.value = sw.value==='A' ? 2 : 0;
-    gb.value = sw.value==='B' ? 2 : 0;
-  }
-}
-
 function onMatchChange(){
   const mid=document.getElementById('sel-match').value;
   if(!mid){document.getElementById('set-input-area').style.display='none';return;}
@@ -727,8 +714,11 @@ function onMatchChange(){
     `<span style="color:var(--accent);font-weight:800">${m.teamA}</span>
      <span style="color:var(--muted);font-size:12px;margin:0 6px">vs</span>
      <span style="color:var(--primary);font-weight:800">${m.teamB}</span>`;
-  document.getElementById('col-a').textContent = 'A게임';
-  document.getElementById('col-b').textContent = 'B게임';
+  // 헤더에 학교명 표시 (col-a = teamA 약칭, col-b = teamB 약칭)
+  const shortA = m.teamA.replace('중','').replace('새봄','봄');
+  const shortB = m.teamB.replace('중','').replace('새봄','봄');
+  document.getElementById('col-a').textContent = shortA;
+  document.getElementById('col-b').textContent = shortB;
 
   // 5매치 전부 입력 행
   let html='';
@@ -739,14 +729,14 @@ function onMatchChange(){
     const curGB=st?st.gb:'';
     const rowCls=st?'done':'';
     html+=`<div class="set-row ${rowCls}">
-      <div class="set-lbl">${SET_LABELS[i-1]}</div>
-      <select class="set-sel" id="sw${i}" onchange="syncGameScore(${i},'${m.teamA}','${m.teamB}')">
+      <div class="set-lbl" style="font-size:11px;font-weight:800;color:var(--muted);text-align:center">${SET_LABELS[i-1]}</div>
+      <select class="set-sel" id="sw${i}">
         <option value="">-</option>
         <option value="A" ${curW==='A'?'selected':''}>${m.teamA} 승</option>
         <option value="B" ${curW==='B'?'selected':''}>${m.teamB} 승</option>
       </select>
-      <input type="number" class="set-sc" id="ga${i}" min="0" max="2" value="${curGA}" placeholder="A" style="text-align:center">
-      <input type="number" class="set-sc" id="gb${i}" min="0" max="2" value="${curGB}" placeholder="B" style="text-align:center">
+      <input type="number" class="set-sc" id="ga${i}" min="0" max="2" value="${curGA}" placeholder="-">
+      <input type="number" class="set-sc" id="gb${i}" min="0" max="2" value="${curGB}" placeholder="-">
     </div>`;
   }
   document.getElementById('set-input-wrap').innerHTML=html;
