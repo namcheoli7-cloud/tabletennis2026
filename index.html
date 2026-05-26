@@ -120,13 +120,14 @@ main{max-width:800px;margin:0 auto;padding:14px 12px;}
 
 /* ── 리그표 ── */
 .lg-outer{overflow-x:auto;}
-.lg-table{border-collapse:collapse;font-size:12px;min-width:100%;}
-.lg-table th{background:var(--primary);color:#fff;padding:7px 8px;text-align:center;font-size:11px;white-space:nowrap;}
-.lg-table td{padding:7px 8px;border:1px solid var(--border);text-align:center;font-size:12px;white-space:nowrap;}
-.lg-table .sc{font-weight:800;background:#f8f9fc;text-align:left;padding-left:10px;}
+.lg-table{border-collapse:collapse;font-size:14px;min-width:100%;width:100%;}
+.lg-table th{background:var(--primary);color:#fff;padding:10px 8px;text-align:center;font-size:12px;white-space:nowrap;}
+.lg-table td{padding:12px 8px;border:1px solid var(--border);text-align:center;font-size:15px;white-space:nowrap;}
+.lg-table .sc{font-weight:800;background:#f8f9fc;text-align:left;padding-left:12px;font-size:13px;}
 .self{background:#e2e8f0;}
-.cw{background:#dcfce7;color:#15803d;font-weight:800;}
-.cl{background:#fee2e2;color:#dc2626;}
+.cw{background:#dcfce7;color:#15803d;font-weight:800;font-size:20px;}
+.cl{background:#fee2e2;color:#dc2626;font-size:20px;}
+.cn{background:#f8f9fc;color:var(--muted);}
 
 /* ── 관리자 패널 ── */
 .admin-wrap{border:2px solid var(--accent);border-radius:14px;overflow:hidden;margin-bottom:14px;}
@@ -298,29 +299,13 @@ select,input[type=text],input[type=password],input[type=number]{
     </div>
   </div>
 
-  <!-- 순위표 -->
-  <div class="card">
-    <div class="ctitle">📊 순위표</div>
-    <table class="stn-table">
-      <thead><tr>
-        <th style="width:36px">순위</th>
-        <th style="text-align:left;padding-left:8px">학교</th>
-        <th>승</th>
-        <th>패</th>
-        <th title="매치득실: 복복단단복 5매치 중 이긴 수 - 진 수">매치<br>득실</th>
-        <th title="게임득실: 각 매치의 게임(3판2선승) 득실">게임<br>득실</th>
-        <th>승점</th>
-      </tr></thead>
-      <tbody id="stn-body"></tbody>
-    </table>
-    <p style="font-size:11px;color:var(--muted);margin-top:8px;">승점: 승 2점 / 패 1점 / 실격 0점 &nbsp;·&nbsp; 동점 시: 매치득실 → 게임득실 → 점수득실 → 추첨 (순위표에는 점수득실 미표시)</p>
-  </div>
+
 
   <!-- 리그표 -->
   <div class="card">
     <div class="ctitle">🗂 리그표</div>
     <div class="lg-outer"><table class="lg-table" id="lg-table"></table></div>
-    <p style="font-size:11px;color:var(--muted);margin-top:6px;">행(홈팀) 기준 · 매치 승:패 표시</p>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px;">각 칸: 행(↓) 학교가 열(→) 학교와의 경기에서 얻은 매치 승수 &nbsp;·&nbsp; 같은 경기의 두 칸 합계 = 5</p>
   </div>
 
 </div><!-- /tab-main -->
@@ -356,7 +341,7 @@ select,input[type=text],input[type=password],input[type=number]{
   <div class="card">
     <div class="ctitle">경기 규정</div>
     <ol style="font-size:13px;line-height:2.1;padding-left:18px;">
-      <li>5개 학교 폴리그 후 순위 산정</li>
+      <li>5개 학교 풀리그 후 순위 산정</li>
       <li>복복단단복 5게임 모두 진행, 결과 전부 순위 계산에 반영</li>
       <li>각 게임: 11점 3판 2선승제 (듀스 있음)</li>
       <li>순위 결정: 승점 → 매치득실 → 게임득실 → 점수득실 → 추첨</li>
@@ -509,7 +494,6 @@ function ensureAssignedAt(mid){
 function renderAll(){
   renderCourts();
   renderSchedule();
-  renderStandings();
   renderLeague();
   if(isAdmin) populateAdminSelects();
 }
@@ -668,24 +652,35 @@ function renderStandings(){
   }).join('');
 }
 
-// ── 리그표 (학교명 전체) ──
+// ── 리그표: 행 학교가 열 학교와의 경기에서 얻은 매치 승수 ──
 function renderLeague(){
-  let hdr=`<tr><th></th>${SCHOOLS.map(s=>`<th>${s}</th>`).join('')}</tr>`;
+  // 헤더: 빈칸 + 학교명들 (상대팀)
+  let hdr=`<tr>
+    <th style="background:#0f2540;min-width:80px">↓ vs →</th>
+    ${SCHOOLS.map(s=>`<th style="min-width:70px">${s}</th>`).join('')}
+    <th style="min-width:50px">합계</th>
+  </tr>`;
   let rows='';
   SCHOOLS.forEach(ra=>{
-    rows+=`<tr><td class="sc">${ra}</td>`;
+    let rowTotal=0;
+    let cells='';
     SCHOOLS.forEach(ca=>{
-      if(ra===ca){rows+='<td class="self"></td>';return;}
+      if(ra===ca){ cells+='<td class="self"></td>'; return; }
       const m=MATCHES.find(x=>(x.teamA===ra&&x.teamB===ca)||(x.teamB===ra&&x.teamA===ca));
-      if(!m){rows+='<td>-</td>';return;}
-      if(!isMatchDone(m.id)){rows+='<td>-</td>';return;}
+      if(!m||!isMatchDone(m.id)){ cells+='<td class="cn">-</td>'; return; }
       const {wa,wb}=calcMatchScore(m.id);
-      const myW=m.teamA===ra?wa:wb, myL=m.teamA===ra?wb:wa; // 매치 승:패
+      // 행(ra) 학교가 얻은 매치 승수
+      const myW = m.teamA===ra ? wa : wb;
       const w=calcMatchWinner(m.id);
       const won=(m.teamA===ra&&w==='A')||(m.teamB===ra&&w==='B');
-      rows+=`<td class="${won?'cw':'cl'}">${myW}:${myL}</td>`;
+      rowTotal+=myW;
+      cells+=`<td class="${won?'cw':'cl'}">${myW}</td>`;
     });
-    rows+='</tr>';
+    rows+=`<tr>
+      <td class="sc">${ra}</td>
+      ${cells}
+      <td style="font-weight:800;font-size:15px;background:#f0f4f8;color:var(--primary)">${rowTotal||'-'}</td>
+    </tr>`;
   });
   document.getElementById('lg-table').innerHTML=hdr+rows;
 }
