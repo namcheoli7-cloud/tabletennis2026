@@ -154,7 +154,7 @@ select,input[type=text],input[type=password],input[type=number]{
 /* 세트 입력 */
 .set-input-wrap{display:flex;flex-direction:column;gap:7px;margin-bottom:10px;}
 .set-row{
-  display:grid;grid-template-columns:52px 1fr 36px 36px;
+  display:grid;grid-template-columns:52px 1fr;
   align-items:center;gap:8px;
   padding:8px 10px;background:#f8f9fc;border-radius:8px;border:1.5px solid var(--border);
 }
@@ -162,7 +162,6 @@ select,input[type=text],input[type=password],input[type=number]{
 .set-lbl{font-size:12px;font-weight:800;color:var(--muted);text-align:center;}
 .set-sel{font-size:13px!important;padding:6px 6px!important;margin-bottom:0!important;}
 .set-vs{font-size:13px;font-weight:800;color:var(--muted);text-align:center;}
-.set-sc{font-size:14px!important;text-align:center;padding:6px 3px!important;margin-bottom:0!important;font-weight:800;}
 
 /* 대회정보 */
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -253,18 +252,16 @@ select,input[type=text],input[type=password],input[type=number]{
       <div id="set-input-area" style="display:none">
         <div id="set-team-header" style="margin-bottom:8px;font-size:13px;text-align:center;"></div>
         <!-- 컬럼 헤더 -->
-        <div id="col-header" style="display:grid;grid-template-columns:52px 1fr 36px 36px;gap:8px;padding:0 10px;margin-bottom:4px;font-size:11px;font-weight:700;color:var(--muted);text-align:center;">
-          <div>매치</div>
-          <div style="text-align:left">승리 학교</div>
-          <div id="col-a"></div>
-          <div id="col-b"></div>
+        <div style="display:grid;grid-template-columns:52px 1fr;gap:8px;padding:0 10px;margin-bottom:4px;font-size:11px;font-weight:700;color:var(--muted);">
+          <div style="text-align:center">매치</div>
+          <div>승리 학교</div>
         </div>
         <div class="set-input-wrap" id="set-input-wrap"></div>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-p" style="flex:1" onclick="submitAllSets()">💾 저장</button>
           <button class="btn btn-o btn-sm" onclick="clearMatchResult()">초기화</button>
         </div>
-        <p style="font-size:11px;color:var(--muted);margin-top:6px;">게임 수 예시: 2-0 승 → A=2, B=0 &nbsp;/&nbsp; 2-1 승 → A=2, B=1</p>
+
       </div>
     </div>
 
@@ -305,7 +302,11 @@ select,input[type=text],input[type=password],input[type=number]{
   <div class="card">
     <div class="ctitle">🗂 리그표</div>
     <div class="lg-outer"><table class="lg-table" id="lg-table"></table></div>
-    <p style="font-size:11px;color:var(--muted);margin-top:8px;">각 칸: 행(↓) 학교가 열(→) 학교와의 경기에서 얻은 매치 승수 &nbsp;·&nbsp; 같은 경기의 두 칸 합계 = 5</p>
+    <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.9;">
+      <p>각 칸: 행(↓) 학교가 열(→) 학교와의 경기에서 얻은 매치 승수 &nbsp;·&nbsp; 같은 경기의 두 칸 합계 = 5</p>
+      <p>승점: 이긴 경기 <strong>2점</strong> / 진 경기 <strong>1점</strong> / 실격 <strong>0점</strong></p>
+      <p style="color:var(--primary);font-weight:700;">동률 시 순위 결정: ① 매치득실 → ② 게임득실 → ③ 점수득실 → ④ 추첨</p>
+    </div>
   </div>
 
 </div><!-- /tab-main -->
@@ -652,34 +653,47 @@ function renderStandings(){
   }).join('');
 }
 
-// ── 리그표: 행 학교가 열 학교와의 경기에서 얻은 매치 승수 ──
+// ── 리그표: 행 학교가 열 학교와의 경기에서 얻은 매치 승수 + 승점 합계 ──
+// 승점: 이긴 경기 2점 / 진 경기 1점 / 실격 0점
+function calcSchoolPoints(school){
+  let pts=0;
+  MATCHES.forEach(m=>{
+    const w=calcMatchWinner(m.id); if(!w) return;
+    const isA=m.teamA===school, isB=m.teamB===school;
+    if(!isA&&!isB) return;
+    const won=(isA&&w==='A')||(isB&&w==='B');
+    const d=getMD(m.id);
+    if(d.forfeit) pts += won?2:0;  // 실격: 승자 2점, 패자 0점
+    else pts += won?2:1;
+  });
+  return pts;
+}
+
 function renderLeague(){
-  // 헤더: 빈칸 + 학교명들 (상대팀)
   let hdr=`<tr>
     <th style="background:#0f2540;min-width:80px">↓ vs →</th>
     ${SCHOOLS.map(s=>`<th style="min-width:70px">${s}</th>`).join('')}
-    <th style="min-width:50px">합계</th>
+    <th style="min-width:60px;background:#0f2540">승점</th>
   </tr>`;
   let rows='';
   SCHOOLS.forEach(ra=>{
-    let rowTotal=0;
+    const pts=calcSchoolPoints(ra);
     let cells='';
     SCHOOLS.forEach(ca=>{
       if(ra===ca){ cells+='<td class="self"></td>'; return; }
       const m=MATCHES.find(x=>(x.teamA===ra&&x.teamB===ca)||(x.teamB===ra&&x.teamA===ca));
       if(!m||!isMatchDone(m.id)){ cells+='<td class="cn">-</td>'; return; }
       const {wa,wb}=calcMatchScore(m.id);
-      // 행(ra) 학교가 얻은 매치 승수
       const myW = m.teamA===ra ? wa : wb;
       const w=calcMatchWinner(m.id);
       const won=(m.teamA===ra&&w==='A')||(m.teamB===ra&&w==='B');
-      rowTotal+=myW;
       cells+=`<td class="${won?'cw':'cl'}">${myW}</td>`;
     });
+    const totalDone=MATCHES.filter(m=>(m.teamA===ra||m.teamB===ra)&&isMatchDone(m.id)).length;
     rows+=`<tr>
       <td class="sc">${ra}</td>
       ${cells}
-      <td style="font-weight:800;font-size:15px;background:#f0f4f8;color:var(--primary)">${rowTotal||'-'}</td>
+      <td style="font-weight:800;font-size:17px;background:#fffbeb;color:var(--primary);border-left:2px solid var(--gold);">${totalDone>0?pts:'-'}</td>
     </tr>`;
   });
   document.getElementById('lg-table').innerHTML=hdr+rows;
@@ -709,29 +723,21 @@ function onMatchChange(){
     `<span style="color:var(--accent);font-weight:800">${m.teamA}</span>
      <span style="color:var(--muted);font-size:12px;margin:0 6px">vs</span>
      <span style="color:var(--primary);font-weight:800">${m.teamB}</span>`;
-  // 헤더에 학교명 표시 (col-a = teamA 약칭, col-b = teamB 약칭)
-  const shortA = m.teamA.replace('중','').replace('새봄','봄');
-  const shortB = m.teamB.replace('중','').replace('새봄','봄');
-  document.getElementById('col-a').textContent = shortA;
-  document.getElementById('col-b').textContent = shortB;
+
 
   // 5매치 전부 입력 행
   let html='';
   for(let i=1;i<=5;i++){
     const st=getSet(mid,i);
     const curW=st?st.winner:'';
-    const curGA=st?st.ga:'';
-    const curGB=st?st.gb:'';
     const rowCls=st?'done':'';
     html+=`<div class="set-row ${rowCls}">
-      <div class="set-lbl" style="font-size:11px;font-weight:800;color:var(--muted);text-align:center">${SET_LABELS[i-1]}</div>
+      <div style="font-size:12px;font-weight:800;color:var(--muted);text-align:center">${SET_LABELS[i-1]}</div>
       <select class="set-sel" id="sw${i}">
         <option value="">-</option>
         <option value="A" ${curW==='A'?'selected':''}>${m.teamA} 승</option>
         <option value="B" ${curW==='B'?'selected':''}>${m.teamB} 승</option>
       </select>
-      <input type="number" class="set-sc" id="ga${i}" min="0" max="2" value="${curGA}" placeholder="-">
-      <input type="number" class="set-sc" id="gb${i}" min="0" max="2" value="${curGB}" placeholder="-">
     </div>`;
   }
   document.getElementById('set-input-wrap').innerHTML=html;
@@ -744,37 +750,16 @@ function submitAllSets(){
   let hasAny=false;
   for(let i=1;i<=5;i++){
     const sw=document.getElementById('sw'+i);
-    const ga=document.getElementById('ga'+i);
-    const gb=document.getElementById('gb'+i);
     if(!sw) continue;
     if(sw.value){
       update['s'+i]=sw.value;
-      update['ga'+i]=parseInt(ga.value)||0;
-      update['gb'+i]=parseInt(gb.value)||0;
       hasAny=true;
     } else {
-      update['s'+i]=null; update['ga'+i]=null; update['gb'+i]=null;
+      update['s'+i]=null;
     }
   }
   if(!hasAny){showToast('최소 1매치 이상 입력하세요');return;}
-  // 유효성 검사: 승리팀의 게임 수가 더 많아야 함
-  for(let i=1;i<=5;i++){
-    const sw=document.getElementById('sw'+i);
-    const ga=document.getElementById('ga'+i);
-    const gb=document.getElementById('gb'+i);
-    if(!sw||!sw.value) continue;
-    const va=parseInt(ga.value), vb=parseInt(gb.value);
-    if(isNaN(va)||isNaN(vb)||(!va&&!vb)) continue; // 미입력은 통과
-    if(va+vb > 3){
-      showToast(SET_LABELS[i-1]+': 게임 수 합계는 3 이하여야 합니다'); return;
-    }
-    if(sw.value==='A' && va<=vb){
-      showToast(SET_LABELS[i-1]+': '+ga.closest('.set-row').querySelector('.set-sel').options[1].text+' 게임 수가 더 많아야 합니다'); return;
-    }
-    if(sw.value==='B' && vb<=va){
-      showToast(SET_LABELS[i-1]+': '+ga.closest('.set-row').querySelector('.set-sel').options[2].text+' 게임 수가 더 많아야 합니다'); return;
-    }
-  }
+
   // null 제거
   Object.keys(update).forEach(k=>{if(update[k]===null)delete update[k];});
   // 첫 저장 시 assignedAt 기록 (타이머 기준점)
