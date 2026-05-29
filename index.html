@@ -58,9 +58,9 @@ nav{background:rgba(0,0,0,.18);border-top:1px solid rgba(255,255,255,.1);}
 .nb.on{color:#fff;border-bottom-color:var(--gold);}
 
 /* ── 레이아웃 ── */
-main{max-width:800px;margin:0 auto;padding:14px 12px;}
+main{max-width:800px;margin:0 auto;padding:10px 8px;}
 .tab{display:none;}.tab.on{display:block;}
-.card{background:var(--card);border-radius:12px;padding:14px;border:1px solid var(--border);margin-bottom:12px;box-shadow:0 1px 5px rgba(0,0,0,.05);}
+.card{background:var(--card);border-radius:12px;padding:12px 10px;border:1px solid var(--border);margin-bottom:10px;box-shadow:0 1px 5px rgba(0,0,0,.05);}
 .ctitle{font-size:14px;font-weight:800;color:var(--primary);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
 .ctitle::before{content:'';display:inline-block;width:4px;height:16px;background:var(--accent);border-radius:2px;}
 
@@ -95,39 +95,54 @@ main{max-width:800px;margin:0 auto;padding:14px 12px;}
 .forfeit-banner{background:#fef9c3;border:1px solid #fcd34d;border-radius:8px;padding:7px;text-align:center;font-size:13px;font-weight:700;color:#a16207;}
 .cb-idle{padding:24px 12px;text-align:center;color:var(--muted);font-size:13px;}
 
-/* ── 경기일정표 ── */
-.sch-table{width:100%;border-collapse:collapse;font-size:13px;}
-.sch-table th{background:var(--primary);color:#fff;padding:8px 6px;text-align:center;font-size:12px;}
-.sch-table td{padding:8px 6px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
-.sch-table tr:last-child td{border-bottom:none;}
-.sch-row-live td{background:#fff5f5;}
-.sch-row-done td{background:#f8fffe;}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
+/* ── 배지 공통 ── */
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:12px;font-weight:700;}
 .bw{background:#dcfce7;color:#16a34a;}.bp{background:#f1f5f9;color:#64748b;}
 .bgo{background:var(--accent);color:#fff;}
 .bforf{background:#fee2e2;color:#dc2626;}
 
-/* ── 순위표 ── */
-.stn-table{width:100%;border-collapse:collapse;font-size:13px;}
-.stn-table th{background:var(--primary);color:#fff;padding:8px 6px;text-align:center;font-size:12px;}
-.stn-table td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
-.stn-table tr:last-child td{border-bottom:none;}
-.r1 td{background:#fffbeb;}.r2 td{background:#f0f9ff;}
-.rbadge{display:inline-flex;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;font-weight:800;font-size:11px;}
-.rg{background:var(--gold);color:#fff;}.rs{background:#cbd5e1;color:#1e293b;}
-.rb{background:#c47722;color:#fff;}.ro{background:#e2e8f0;color:#475569;}
-.sn{font-weight:800;text-align:left!important;padding-left:8px!important;}
+/* ── 경기일정표: 모바일 카드형 ── */
+.sch-slot{border-bottom:1px solid var(--border);padding:10px 0;}
+.sch-slot:last-child{border-bottom:none;}
+.sch-time{font-size:12px;font-weight:800;color:var(--primary);margin-bottom:6px;padding:2px 8px;background:#f0f4f8;border-radius:6px;display:inline-block;}
+.sch-matches{display:flex;flex-direction:column;gap:6px;}
+.sch-match-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:10px;background:#f8f9fc;border:1px solid var(--border);}
+.sch-match-row.live{background:#fff5f5;border-color:#fca5a5;}
+.sch-match-row.done{background:#f0fdf8;border-color:#86efac;}
+.sch-court{font-size:11px;font-weight:800;color:var(--muted);flex-shrink:0;min-width:36px;}
+.sch-teams{flex:1;font-size:14px;font-weight:800;color:var(--text);text-align:center;}
+.sch-teams .ta{color:var(--accent);}
+.sch-teams .tb{color:var(--primary);}
+.sch-result{flex-shrink:0;text-align:right;}
 
-/* ── 리그표 ── */
-.lg-outer{overflow-x:auto;}
-.lg-table{border-collapse:collapse;font-size:14px;min-width:100%;width:100%;}
-.lg-table th{background:var(--primary);color:#fff;padding:10px 8px;text-align:center;font-size:12px;white-space:nowrap;}
-.lg-table td{padding:12px 8px;border:1px solid var(--border);text-align:center;font-size:15px;white-space:nowrap;}
-.lg-table .sc{font-weight:800;background:#f8f9fc;text-align:left;padding-left:12px;font-size:13px;}
+/* ── 리그표: 모바일 완전 맞춤 ── */
+.lg-outer{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.lg-table{border-collapse:collapse;width:100%;table-layout:fixed;}
+.lg-table th{
+  background:var(--primary);color:#fff;
+  padding:8px 4px;text-align:center;font-size:11px;
+  word-break:keep-all;line-height:1.3;
+}
+.lg-table td{
+  padding:10px 4px;border:1px solid var(--border);
+  text-align:center;font-size:16px;font-weight:800;
+}
+.lg-table .sc{
+  font-weight:800;background:#f8f9fc;
+  text-align:left;padding-left:8px;
+  font-size:12px;word-break:keep-all;line-height:1.4;
+}
 .self{background:#e2e8f0;}
-.cw{background:#dcfce7;color:#15803d;font-weight:800;font-size:20px;}
-.cl{background:#fee2e2;color:#dc2626;font-size:20px;}
-.cn{background:#f8f9fc;color:var(--muted);}
+.cw{background:#dcfce7;color:#15803d;font-weight:800;font-size:18px;}
+.cl{background:#fee2e2;color:#dc2626;font-size:18px;}
+.cn{background:#f8f9fc;color:var(--muted);font-size:14px;}
+
+/* ── 현황 블록 모바일 ── */
+.courts-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+@media(max-width:400px){.courts-wrap{grid-template-columns:1fr;}}
+.team-a{font-size:15px;font-weight:800;color:var(--accent);}
+.team-b{font-size:15px;font-weight:800;color:var(--primary);}
+.match-score-big{text-align:center;font-size:28px;font-weight:800;letter-spacing:2px;margin-bottom:4px;}
 
 /* ── 관리자 패널 ── */
 .admin-wrap{border:2px solid var(--accent);border-radius:14px;overflow:hidden;margin-bottom:14px;}
@@ -284,16 +299,7 @@ select,input[type=text],input[type=password],input[type=number]{
   <!-- 경기 일정표 -->
   <div class="card">
     <div class="ctitle">📋 경기 일정</div>
-    <div style="overflow-x:auto">
-      <table class="sch-table">
-        <thead><tr>
-          <th style="width:52px">시간</th>
-          <th>1·2탁 매치</th><th style="width:90px">결과</th>
-          <th>3·4탁 매치</th><th style="width:90px">결과</th>
-        </tr></thead>
-        <tbody id="sch-body"></tbody>
-      </table>
-    </div>
+    <div id="sch-body"></div>
   </div>
 
 
@@ -560,50 +566,48 @@ function renderCourts(){
 
 
 
-// ── 경기일정 ──
+// ── 경기일정: 모바일 카드형 ──
 function renderSchedule(){
   const times = [...new Set(MATCHES.map(m=>m.time))];
-
-  // 현재 현황판에 표시 중인 매치 ID 집합
   const liveAB = currentMatchByGroup('AB');
   const liveCD = currentMatchByGroup('CD');
   const liveIds = new Set([liveAB&&liveAB.id, liveCD&&liveCD.id].filter(Boolean));
 
+  const matchCard = m => {
+    if(!m) return '';
+    const d = getMD(m.id);
+    const done = isMatchDone(m.id);
+    const live = liveIds.has(m.id) && !done;
+    const {wa,wb} = calcMatchScore(m.id);
+    let badge = `<span class="badge bp">대기</span>`;
+    if(d.forfeit){
+      const fw = d.forfeit==='A'?m.teamB:m.teamA;
+      badge = `<span class="badge bforf">${fw} 승(몰수)</span>`;
+    } else if(done){
+      const wn = calcMatchWinner(m.id)==='A'?m.teamA:m.teamB;
+      badge = `<span class="badge bw">${wn} 승 (${wa}:${wb})</span>`;
+    } else if(live){
+      badge = `<span class="badge bgo">진행중</span>`;
+    }
+    const rowCls = done?'done':live?'live':'';
+    const courtLbl = m.group==='AB'?'1·2탁':'3·4탁';
+    return `<div class="sch-match-row ${rowCls}">
+      <span class="sch-court">${courtLbl}</span>
+      <span class="sch-teams"><span class="ta">${m.teamA}</span> <span style="color:var(--muted);font-size:12px">vs</span> <span class="tb">${m.teamB}</span></span>
+      <span class="sch-result">${badge}</span>
+    </div>`;
+  };
+
   document.getElementById('sch-body').innerHTML = times.map(t=>{
     const left  = MATCHES.find(m=>m.time===t&&m.group==='AB');
     const right = MATCHES.find(m=>m.time===t&&m.group==='CD');
-
-    // 이 시간대 매치 중 하나라도 현황판 진행중이면 행 강조
-    const isCurrentSlot = [left,right].some(m=>m && liveIds.has(m.id) && !isMatchDone(m.id));
-    const rowCls = isCurrentSlot ? 'sch-row-live' : (
-      [left,right].some(m=>m&&isMatchDone(m.id)) ? 'sch-row-done' : ''
-    );
-
-    const cell = m=>{
-      if(!m) return '<td>-</td><td>-</td>';
-      const d = getMD(m.id);
-      if(d.forfeit){
-        const fw=d.forfeit==='A'?m.teamB:m.teamA;
-        return `<td style="font-weight:800">${m.teamA}<br><span style="font-size:11px;color:var(--muted)">vs ${m.teamB}</span></td><td><span class="badge bforf">${fw} 승(몰수)</span></td>`;
-      }
-      const done=isMatchDone(m.id);
-      const {wa,wb}=calcMatchScore(m.id);
-      // 현황판에서 진행 중으로 표시되는 매치이면서 미완료
-      const live = liveIds.has(m.id) && !done;
-      let badge=`<span class="badge bp">대기</span>`;
-      if(done){
-        const wn=calcMatchWinner(m.id)==='A'?m.teamA:m.teamB;
-        badge=`<span class="badge bw">${wn} 승 (${wa}:${wb})</span>`;
-      } else if(live){
-        badge=`<span class="badge bgo">진행중</span>`;
-      }
-      return `<td style="font-weight:800">${m.teamA}<br><span style="font-size:11px;color:var(--muted)">vs ${m.teamB}</span></td><td>${badge}</td>`;
-    };
-
-    return `<tr class="${rowCls}">
-      <td style="font-weight:700;color:var(--primary)">${t}</td>
-      ${cell(left)}${cell(right)}
-    </tr>`;
+    return `<div class="sch-slot">
+      <div class="sch-time">⏰ ${t}</div>
+      <div class="sch-matches">
+        ${matchCard(left)}
+        ${matchCard(right)}
+      </div>
+    </div>`;
   }).join('');
 }
 
@@ -670,10 +674,14 @@ function calcSchoolPoints(school){
 }
 
 function renderLeague(){
+  // 모바일: 고정 너비 배분 (학교명 칼럼 균등)
   let hdr=`<tr>
-    <th style="background:#0f2540;min-width:80px">↓ vs →</th>
-    ${SCHOOLS.map(s=>`<th style="min-width:70px">${s}</th>`).join('')}
-    <th style="min-width:60px;background:#0f2540">승점</th>
+    <th style="background:#0f2540;width:18%">↓ vs →</th>
+    ${SCHOOLS.map(s=>{
+      const label = s==='다산새봄중'?'다산<br>새봄중':s==='퇴계원중'?'퇴계원중':s;
+      return `<th style="width:13%">${label}</th>`;
+    }).join('')}
+    <th style="width:10%;background:#0f2540">승점</th>
   </tr>`;
   let rows='';
   SCHOOLS.forEach(ra=>{
@@ -691,7 +699,7 @@ function renderLeague(){
     });
     const totalDone=MATCHES.filter(m=>(m.teamA===ra||m.teamB===ra)&&isMatchDone(m.id)).length;
     rows+=`<tr>
-      <td class="sc">${ra}</td>
+      <td class="sc">${ra==='다산새봄중'?'다산<br>새봄중':ra}</td>
       ${cells}
       <td style="font-weight:800;font-size:17px;background:#fffbeb;color:var(--primary);border-left:2px solid var(--gold);">${totalDone>0?pts:'-'}</td>
     </tr>`;
